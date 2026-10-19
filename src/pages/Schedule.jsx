@@ -7,12 +7,9 @@ export default function Schedule() {
 
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-  // State to track slide index for days with multiple shows
   const [slideIndices, setSlideIndices] = useState({});
-  // State for the "View Details" modal
   const [selectedDayDetails, setSelectedDayDetails] = useState(null);
 
-  // Group items by release day
   const scheduleByDay = daysOfWeek.reduce((acc, day) => {
     acc[day] = mediaItems.filter(
       (item) => item.releaseDay && item.releaseDay.toLowerCase() === day.toLowerCase()
@@ -20,7 +17,6 @@ export default function Schedule() {
     return acc;
   }, {});
 
-  // Handle Carousel Navigation for a specific day
   const handlePrevSlide = (day, maxIndex) => {
     setSlideIndices((prev) => ({
       ...prev,
@@ -35,25 +31,22 @@ export default function Schedule() {
     }));
   };
 
-  // Determine current day of the week
   const todayName = new Date().toLocaleString('en-US', { weekday: 'long' });
-
-  // Separate today from the other days
   const otherDays = daysOfWeek.filter((day) => day.toLowerCase() !== todayName.toLowerCase());
-  // Fallback to Monday if today doesn't match for any reason
   const activeToday = daysOfWeek.find((day) => day.toLowerCase() === todayName.toLowerCase()) || 'Monday';
 
   const renderDayCard = (day, isFeatured = false) => {
     const shows = scheduleByDay[day] || [];
     const currentIndex = slideIndices[day] || 0;
     const isToday = day.toLowerCase() === todayName.toLowerCase();
+    const maxIndex = shows.length - 1;
 
     return (
       <div
         key={day}
         className={`bg-slate-900 border ${
           isToday 
-            ? 'border-indigo-500/80 bg-slate-900/95 ring-2 ring-indigo-500/40 shadow-xl shadow-indigo-500/10' 
+            ? 'border-indigo-500/80 bg-slate-900/95 ring-2 ring-indigo-500/30 shadow-xl shadow-indigo-500/10' 
             : 'border-slate-800'
         } rounded-3xl p-5 flex flex-col justify-between transition-all duration-200 ${
           isFeatured ? 'h-full min-h-[460px]' : 'h-[360px]'
@@ -82,7 +75,6 @@ export default function Schedule() {
             <div className="text-slate-600 text-xs text-center">No releases scheduled</div>
           ) : (
             <div className="w-full h-full flex flex-col">
-              {/* Active Show Card */}
               {shows[currentIndex] && (
                 <div className="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 flex-1 flex flex-col justify-between overflow-hidden group">
                   <div className={`relative w-full rounded-xl overflow-hidden bg-slate-800 mb-3 ${isFeatured ? 'h-52' : 'h-28'}`}>
@@ -120,7 +112,7 @@ export default function Schedule() {
               {shows.length > 1 && (
                 <div className="flex items-center justify-between mt-2 px-1">
                   <button
-                    onClick={() => handlePrevSlide(day, shows.length - 1)}
+                    onClick={() => handlePrevSlide(day, maxIndex)}
                     className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition"
                     title="Previous Show"
                   >
@@ -130,7 +122,7 @@ export default function Schedule() {
                     {currentIndex + 1} / {shows.length}
                   </span>
                   <button
-                    onClick={() => handleNextSlide(day, shows.length - 1)}
+                    onClick={() => handleNextSlide(day, maxIndex)}
                     className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition"
                     title="Next Show"
                   >
@@ -162,8 +154,8 @@ export default function Schedule() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/50 border border-slate-800/80 p-6 rounded-3xl backdrop-blur-xl">
+        <div className="space-y-1">
           <h2 className="text-2xl font-bold text-white flex items-center gap-2">
             <CalendarIcon className="w-6 h-6 text-indigo-500" />
             Weekly Schedule
@@ -174,17 +166,15 @@ export default function Schedule() {
         </div>
       </div>
 
-      {/* Main Split Layout: Left (Today - Enlarged) & Right (Grid of Other Days) */}
+      {/* Main Split Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Side: Today's Highlighted Schedule (Span 4 cols) */}
         <div className="lg:col-span-4 flex flex-col">
           <div className="text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-5.5" /> Featured Today
+            <Sparkles className="w-3.5 h-3.5" /> Featured Today
           </div>
           {renderDayCard(activeToday, true)}
         </div>
 
-        {/* Right Side: Grid of Remaining Days of the Week (Span 8 cols) */}
         <div className="lg:col-span-8 flex flex-col">
           <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
             Other Days of the Week
@@ -216,7 +206,6 @@ export default function Schedule() {
               </button>
             </div>
 
-            {/* List of Shows in Modal */}
             <div className="overflow-y-auto space-y-3 pr-1 flex-1">
               {selectedDayDetails.shows.map((show) => (
                 <div
@@ -245,9 +234,6 @@ export default function Schedule() {
                         </span>
                       )}
                     </div>
-                    {show.description && (
-                      <p className="text-xs text-slate-500 line-clamp-2 mt-1">{show.description}</p>
-                    )}
                   </div>
                 </div>
               ))}
